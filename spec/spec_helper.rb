@@ -5,6 +5,9 @@ module Support
   def assert_correct_indenting(string)
     whitespace = string.scan(/^\s*/).first
     string = string.split("\n").map { |line| line.gsub /^#{whitespace}/, '' }.join("\n").strip
+    expected_string = string
+
+    string = strip_indentation(string)
 
     File.open 'test.exs', 'w' do |f|
       f.write string
@@ -14,7 +17,12 @@ module Support
     @vim.normal 'gg=G'
     @vim.write
 
-    IO.read('test.exs').strip.should eq string
+    IO.read('test.exs').strip.should eq expected_string
+  end
+
+  private
+  def strip_indentation(string)
+    string.gsub(/^\s+/,"")
   end
 end
 
