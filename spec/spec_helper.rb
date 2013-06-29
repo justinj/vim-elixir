@@ -22,7 +22,7 @@ module Support
 
   private
   def strip_indentation(string)
-    string.gsub(/^\s+/,"")
+    string.gsub(/^ +/,"")
   end
 end
 

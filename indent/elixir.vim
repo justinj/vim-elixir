@@ -54,12 +54,7 @@ function! GetElixirIndent(line_num)
   endif
 
   " blank lines are indented based on the previous not blank line"
-  if previous_line =~ '^\s*$'
-    let nonblank = prevnonblank(a:line_num)
-    return indent(nonblank)
-  endif
-
-  return indent(plnum)
+  return indent(prev_nonblank_line)
 endfunction
 
 function! s:LineIsIndenter(lnum)
@@ -77,5 +72,5 @@ function! s:LineIsDeindenter(lnum)
 endfunction
 
 function! s:LineIsInString(lnum)
-  return synIDattr(synID(a:lnum, indent(a:lnum) + 1, 1), 'name') =~ '\(elixirDocString\|elixirString\)'
+  return synIDattr(synID(a:lnum, indent(a:lnum) + 1, 1), 'name') =~ '\(elixirDocString\|elixirString\|Comment\)'
 endfunction
