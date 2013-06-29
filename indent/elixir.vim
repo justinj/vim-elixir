@@ -17,53 +17,40 @@ if exists("*GetElixirIndent")
   finish
 endif
 
-let s:elixir_indent_keywords = '\%(\<\(case\|if\|unless\|try\|loop\|receive\)\>\|' .
-      \ '^\s*\(defmodule\|defimpl\|defmacro\|defdelegate\|defexception\|defcallback\|defoverridable\|defp\|def\|test\|[a-z]\w*\(:\)\@=\)\|' .
-      \ 'fn(.*)\s\(do\|->\)$\)'
-
-let s:elixir_clauses = '\(else\|match\|elsif\|catch\|after\|rescue\):\|end'
-
-function! s:BlockStarter(lnum, block_start_re)
-   let lnum = a:lnum
-   let maxindent = 10000
-   while lnum > 1
-     if indent(lnum) < maxindent
-       if getline(lnum) =~ a:block_start_re
-         return lnum
-       else
-         let maxindent = indent(lnum)
-         if maxindent == 0
-           return -1
-         endif
-       endif
-     endif
-     let lnum = prevnonblank(lnum - 1)
-   endwhile
-   return -1
- endfunction
+let s:elixir_clauses = '\(else\|match\|elsif\|catch\|after\|rescue\)'
+let s:elixir_indent_keywords = '\(do\|fn\|->\|'.s:elixir_clauses.'\)\s*$'
+let s:elixir_deindent_keywords = '^\s*\(end\|'.s:elixir_clauses.'\)'
 
 function! GetElixirIndent(line_num)
   " don't indent if it's the first line of the file
-  if a:line_num == 0
+  if a:line_num == 1
     return 0
   endif
 
   let this_line = getline(a:line_num)
 
-  if this_line =~ s:elixir_clauses
-    let bslnum = s:BlockStarter(a:line_num, s:elixir_indent_keywords)
-    if bslnum > 0
-      return indent(bslnum)
-    else
-      return -1
-    endif
+  if s:LineIsDeindenter(a:line_num)
+    let level = 1
+    let line_num = a:line_num
+    while level > 0 && line_num > 0
+      let line_num -= 1
+      let line = getline(line_num)
+      if s:LineIsIndenter(line_num)
+        let level -= 1
+      endif
+      if s:LineIsDeindenter(line_num)
+        let level += 1
+      endif
+    endwhile
+    return indent(line_num)
   endif
 
   let plnum = a:line_num - 1
-  let previous_line = getline(plnum)
+  let prev_nonblank_line = prevnonblank(plnum)
+  let previous_line = getline(prev_nonblank_line)
 
-  if previous_line =~ '\(do\|when\|->\)$\|^\s*\(if\>\|[a-z]\w*\(:\)\@=\)'
-    return indent(plnum) + &sw
+  if s:LineIsIndenter(prev_nonblank_line)
+    return indent(prev_nonblank_line) + &sw
   endif
 
   " blank lines are indented based on the previous not blank line"
@@ -73,4 +60,22 @@ function! GetElixirIndent(line_num)
   endif
 
   return indent(plnum)
+endfunction
+
+function! s:LineIsIndenter(lnum)
+  if s:LineIsInString(a:lnum)
+    return 0
+  endif
+  return getline(a:lnum) =~ s:elixir_indent_keywords
+endfunction
+
+function! s:LineIsDeindenter(lnum)
+  if s:LineIsInString(a:lnum)
+    return 0
+  endif
+  return getline(a:lnum) =~ s:elixir_deindent_keywords
+endfunction
+
+function! s:LineIsInString(lnum)
+  return synIDattr(synID(a:lnum, indent(a:lnum) + 1, 1), 'name') =~ '\(elixirDocString\|elixirString\)'
 endfunction
