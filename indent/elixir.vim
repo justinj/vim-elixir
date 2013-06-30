@@ -27,6 +27,10 @@ function! GetElixirIndent(line_num)
     return 0
   endif
 
+  if s:LineIsInString(a:line_num)
+    return -1
+  endif
+
   let this_line = getline(a:line_num)
 
   if s:LineIsDeindenter(a:line_num)

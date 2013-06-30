@@ -9,6 +9,21 @@ describe "Indenting" do
     EOF
   end
 
+  it "doesn't mind blank lines" do
+    input = <<-EOF
+      def test do
+      
+      line
+      end
+    EOF
+    expected = <<-EOF
+      def test do
+
+        line
+      end
+    EOF
+  end
+
   it "does not consider :end as end" do
     assert_correct_indenting <<-EOF
       defmodule Test do

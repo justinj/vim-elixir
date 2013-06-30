@@ -3,25 +3,30 @@ require 'spec_helper'
 describe "Indenting" do
   context "documentation" do
     it "with end keyword" do
-      assert_correct_indenting <<-EOF
+      input = <<-EOF
         defmodule Test do
           @doc """
           end
           """
         end
       EOF
+      expected = input
+      assert_indents_to input, expected
     end
 
-    it "something" do
-      assert_correct_indenting <<-EOF
-        defmodule HashDict do
+    it "does not modify indentation in docstrings" do
+      input = <<-EOF
+        defmodule SomeModule do
           @moduledoc """
-          A key-value store.
+          A cool module
 
-          The `HashDict` is meant to work well with both small and
+          # Examples
+             iex> 1 + 2
+             3
           """
-        end
       EOF
+      expected = input
+      assert_indents_to input, expected
     end
   end
 end

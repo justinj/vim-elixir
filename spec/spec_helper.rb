@@ -3,12 +3,23 @@ require 'vimrunner'
 
 module Support
   def assert_correct_indenting(string)
-    whitespace = string.scan(/^\s*/).first
-    string = string.split("\n").map { |line| line.gsub /^#{whitespace}/, '' }.join("\n").strip
+    string = normalize_indentation(string)
     expected_string = string
 
     string = strip_indentation(string)
 
+    indent(string).should eq expected_string
+  end
+
+  def assert_indents_to(input, expected)
+    input = normalize_indentation(input)
+    expected = normalize_indentation(expected)
+    indent(input).should eq expected
+  end
+
+  private
+
+  def indent(string)
     File.open 'test.exs', 'w' do |f|
       f.write string
     end
@@ -17,12 +28,16 @@ module Support
     @vim.normal 'gg=G'
     @vim.write
 
-    IO.read('test.exs').strip.should eq expected_string
+    IO.read('test.exs').strip
   end
 
-  private
   def strip_indentation(string)
     string.gsub(/^ +/,"")
+  end
+
+  def normalize_indentation(string)
+    whitespace = string.scan(/^ */).first
+    string.split("\n").map { |line| line.gsub /^#{whitespace}/, '' }.join("\n").strip
   end
 end
 
