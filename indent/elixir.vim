@@ -18,7 +18,7 @@ if exists("*GetElixirIndent")
 endif
 
 let s:elixir_clauses = '\(else\|match\|elsif\|catch\|after\|rescue\)'
-let s:elixir_indent_keywords = '\(do\|fn\|->\|'.s:elixir_clauses.'\)\s*$'
+let s:elixir_indent_keywords = '\(def.*,\|do\|fn\|->\|'.s:elixir_clauses.'\)\s*$'
 let s:elixir_deindent_keywords = '^\s*\(end\|'.s:elixir_clauses.'\)'
 
 function! GetElixirIndent(line_num)
